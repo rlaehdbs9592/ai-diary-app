@@ -1,0 +1,17 @@
+{
+  "name": "ai-empathy-diary",
+  "version": "1.0.0",
+  "description": "AI 공감 다이어리 - OpenRouter API 프록시 서버",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0"
+  }
+}

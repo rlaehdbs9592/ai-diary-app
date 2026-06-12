@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 다이어리</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #ECECEC;
+      --bg-card: #ffffff;
+      --bg-card-alt: #F9F9F9;
+      --border: #E0E0E0;
+      --border-light: #E0E0E0;
+      --text-primary: #111111;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --accent: #FFD600;
+      --accent-hover: #e6c200;
+      --accent-light: #fffbe6;
+      --badge-bg: #111111;
+      --shadow-sm: 0 4px 20px rgba(0,0,0,0.10);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.16);
+      --radius-sm: 4px;
+      --radius-md: 4px;
+      --radius-lg: 4px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 24px 16px 64px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 40px 24px 32px;
+      background: #111111;
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header__title {
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 900;
+      color: #FFD600;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .header__subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 400;
+      margin-bottom: 14px;
+    }
+
+    .header__date {
+      display: inline-block;
+      font-size: 0.82rem;
+      color: #111111;
+      background: #FFD600;
+      padding: 4px 14px;
+      border-radius: 2px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── Input Card ─── */
+    .input-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .input-card__label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .diary-textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: var(--bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      line-height: 1.7;
+    }
+
+    .diary-textarea::placeholder {
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .diary-textarea:focus {
+      border-color: #FFD600;
+      box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.25);
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      margin-bottom: 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: #FFD600;
+      color: #111111;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: opacity 0.18s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      opacity: 0.82;
+    }
+
+    .submit-btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ─── Loading ─── */
+    .loading-section {
+      display: none;
+      text-align: center;
+      padding: 36px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .loading-section.visible {
+      display: block;
+    }
+
+    .loading-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .loading-dots span {
+      width: 10px;
+      height: 10px;
+      background: #FFD600;
+      border-radius: 0;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40%            { transform: scale(1);   opacity: 1;   }
+    }
+
+    .loading-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* ─── Response Section ─── */
+    .response-section {
+      display: none;
+      margin-bottom: 24px;
+    }
+
+    .response-section.visible {
+      display: block;
+      animation: fadeSlideIn 0.4s ease-out;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .emotion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #111111;
+      border: none;
+      border-radius: 2px;
+      padding: 4px 14px;
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: #FFD600;
+      letter-spacing: 0.5px;
+    }
+
+    .emotion-badge__emoji {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .response-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .response-card__title {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .response-card__body {
+      font-size: 0.97rem;
+      color: var(--text-primary);
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .response-card--empathy {
+      border-left: 4px solid #FFD600;
+    }
+
+    .response-card--comfort {
+      border-left: 4px solid #111111;
+      background: var(--bg-card-alt);
+    }
+
+    .response-card--comfort .response-card__body {
+      color: #111111;
+    }
+
+    /* ─── Error Section ─── */
+    .error-section {
+      display: none;
+      background: #fff5f5;
+      border: 1px solid #f5c6c6;
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .error-section.visible {
+      display: block;
+      animation: fadeSlideIn 0.3s ease-out;
+    }
+
+    .error-section__icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .error-section__text {
+      font-size: 0.92rem;
+      color: #c0392b;
+      margin-bottom: 14px;
+      font-weight: 300;
+    }
+
+    .retry-btn {
+      padding: 10px 20px;
+      background: #111111;
+      color: #FFD600;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      letter-spacing: 0.3px;
+    }
+
+    .retry-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* ─── History Section ─── */
+    .history-section {
+      margin-top: 8px;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .history-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .clear-btn {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .clear-btn:hover {
+      color: #e74c3c;
+      border-color: #f5c6c6;
+      background: #fff5f5;
+    }
+
+    .history-empty {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 300;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeSlideIn 0.3s ease-out;
+    }
+
+    .history-item__meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .history-item__time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .history-item__emotion {
+      font-size: 0.72rem;
+      background: #111111;
+      color: #FFD600;
+      border-radius: 2px;
+      padding: 2px 8px;
+      font-weight: 900;
+    }
+
+    .history-item__text {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-light);
+      margin: 28px 0;
+    }
+
+    /* ─── Chart Section ─── */
+    .chart-section {
+      margin-top: 8px;
+    }
+    .chart-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .chart-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .chart-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 16px 12px;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .chart-wrapper canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 14px;
+    }
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .chart-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chart-empty {
+      display: none;
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+    }
+    .chart-empty.visible {
+      display: block;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 480px) {
+      body {
+        padding: 16px 12px 48px;
+      }
+
+      .header {
+        padding: 24px 16px 20px;
+      }
+
+      .input-card,
+      .response-card,
+      .error-section {
+        padding: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+
+    <!-- Header -->
+    <header class="header" role="banner">
+      <h1 class="header__title">오늘의 다이어리 ✍️</h1>
+      <p class="header__subtitle">오늘 하루를 한 줄로 적어보세요</p>
+      <span class="header__date" id="today-date" aria-label="오늘 날짜"></span>
+    </header>
+
+    <!-- Input Area -->
+    <section class="input-card" aria-label="일기 입력">
+      <label class="input-card__label" for="diary-input">오늘 있었던 일을 한 줄로 적어주세요</label>
+      <textarea
+        id="diary-input"
+        class="diary-textarea"
+        placeholder="오늘 있었던 일을 한 줄로 적어주세요..."
+        maxlength="300"
+        rows="4"
+        aria-describedby="char-counter"
+      ></textarea>
+      <p class="char-count" id="char-counter" aria-live="polite">
+        <span id="char-current">0</span> / 300
+      </p>
+      <button
+        class="submit-btn"
+        id="submit-btn"
+        type="button"
+        aria-label="AI에게 일기 보내기"
+      >
+        AI에게 보내기 💌
+      </button>
+    </section>
+
+    <!-- Loading State -->
+    <section
+      class="loading-section"
+      id="loading-section"
+      aria-live="polite"
+      aria-label="로딩 중"
+      role="status"
+    >
+      <div class="loading-dots" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p class="loading-text">AI가 당신의 하루를 읽고 있어요... 💭</p>
+    </section>
+
+    <!-- Error State -->
+    <section
+      class="error-section"
+      id="error-section"
+      aria-live="assertive"
+      aria-label="오류 메시지"
+      role="alert"
+    >
+      <div class="error-section__icon" aria-hidden="true">😔</div>
+      <p class="error-section__text" id="error-text">
+        AI와 연결하는 데 문제가 생겼어요. 잠시 후 다시 시도해 주세요.
+      </p>
+      <button class="retry-btn" id="retry-btn" type="button">다시 시도하기</button>
+    </section>
+
+    <!-- Response Area -->
+    <section
+      class="response-section"
+      id="response-section"
+      aria-label="AI 응답"
+      aria-live="polite"
+    >
+      <div class="response-header">
+        <div class="emotion-badge" id="emotion-badge" role="status" aria-label="감지된 감정">
+          <span class="emotion-badge__emoji" id="emotion-emoji" aria-hidden="true"></span>
+          <span id="emotion-label"></span>
+        </div>
+      </div>
+
+      <article class="response-card response-card--empathy" aria-label="AI의 공감 메시지">
+        <p class="response-card__title">AI의 공감</p>
+        <p class="response-card__body" id="empathy-text"></p>
+      </article>
+
+      <article class="response-card response-card--comfort" aria-label="오늘의 한마디">
+        <p class="response-card__title">오늘의 한마디</p>
+        <p class="response-card__body" id="comfort-text"></p>
+      </article>
+    </section>
+
+    <!-- Divider + History -->
+    <hr class="divider" aria-hidden="true" />
+
+    <section class="history-section" aria-label="오늘의 일기 기록">
+      <div class="history-header">
+        <h2 class="history-title">오늘의 기록</h2>
+        <button
+          class="clear-btn"
+          id="clear-btn"
+          type="button"
+          aria-label="오늘 기록 모두 지우기"
+        >
+          오늘 기록 지우기
+        </button>
+      </div>
+      <div id="history-container">
+        <p class="history-empty" id="history-empty" aria-live="polite">
+          아직 오늘의 기록이 없어요. 첫 번째 일기를 써 보세요! 📖
+        </p>
+        <ul class="history-list" id="history-list" aria-label="일기 목록"></ul>
+      </div>
+    </section>
+
+    <hr class="divider" aria-hidden="true" />
+
+    <section class="chart-section" aria-label="이번 주 감정 통계">
+      <div class="chart-header">
+        <h2 class="chart-title">이번 주 감정 변화</h2>
+        <span class="chart-subtitle">최근 7일간 기록된 감정</span>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="emotion-chart" width="600" height="260" aria-label="이번 주 감정 변화 차트"></canvas>
+      </div>
+      <div class="chart-legend" id="chart-legend"></div>
+      <p class="chart-empty" id="chart-empty">아직 이번 주 기록이 없어요. 일기를 써 보세요! 📊</p>
+    </section>
+
+  </main>
+
+  <script>
+    const EMOTION_MAP = {
+      '기쁨':  { emoji: '😊', label: '기쁨' },
+      '슬픔':  { emoji: '😢', label: '슬픔' },
+      '분노':  { emoji: '😤', label: '분노' },
+      '불안':  { emoji: '😰', label: '불안' },
+      '피로':  { emoji: '😴', label: '피로' },
+      '설렘':  { emoji: '🥰', label: '설렘' },
+      '감사':  { emoji: '🙏', label: '감사' },
+      '외로움':{ emoji: '🥺', label: '외로움' },
+    };
+
+    const EMOTION_COLORS = {
+      '기쁨':   '#FFD600',
+      '설렘':   '#FF9500',
+      '감사':   '#34C759',
+      '슬픔':   '#5AC8FA',
+      '외로움': '#AF52DE',
+      '불안':   '#FF6B6B',
+      '분노':   '#FF3B30',
+      '피로':   '#8E8E93',
+    };
+
+    const EMOTION_Y_ORDER = ['기쁨', '설렘', '감사', '외로움', '슬픔', '불안', '분노', '피로'];
+    const LS_KEY = 'diary_entries';
+
+    let diaryHistory = [];
+    let lastInput    = '';
+
+    function getTodayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getDateStr(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function saveToLocalStorage(entries) {
+      try {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 6);
+        const cutoffStr = getDateStr(cutoff);
+        const pruned = entries.filter(e => e.date >= cutoffStr);
+        localStorage.setItem(LS_KEY, JSON.stringify(pruned));
+      } catch (e) {
+        console.warn('[diary] localStorage 저장 실패:', e);
+      }
+    }
+
+    function loadAllFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn('[diary] localStorage 읽기 실패:', e);
+        return [];
+      }
+    }
+
+    function loadTodayFromLocalStorage() {
+      const today = getTodayStr();
+      const all = loadAllFromLocalStorage();
+      const todayEntries = all
+        .filter(e => e.date === today)
+        .sort((a, b) => b.time.localeCompare(a.time));
+      diaryHistory = todayEntries.map(e => ({
+        time: e.time,
+        text: e.text,
+        emotion: e.emotion,
+      }));
+    }
+
+    const diaryInput      = document.getElementById('diary-input');
+    const charCurrent     = document.getElementById('char-current');
+    const submitBtn       = document.getElementById('submit-btn');
+    const loadingSection  = document.getElementById('loading-section');
+    const errorSection    = document.getElementById('error-section');
+    const errorText       = document.getElementById('error-text');
+    const retryBtn        = document.getElementById('retry-btn');
+    const responseSection = document.getElementById('response-section');
+    const emotionEmoji    = document.getElementById('emotion-emoji');
+    const emotionLabel    = document.getElementById('emotion-label');
+    const empathyText     = document.getElementById('empathy-text');
+    const comfortText     = document.getElementById('comfort-text');
+    const clearBtn        = document.getElementById('clear-btn');
+    const historyEmpty    = document.getElementById('history-empty');
+    const historyList     = document.getElementById('history-list');
+
+    (function renderDate() {
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      const now  = new Date();
+      const y    = now.getFullYear();
+      const m    = now.getMonth() + 1;
+      const d    = now.getDate();
+      const day  = days[now.getDay()];
+      document.getElementById('today-date').textContent =
+        `${y}년 ${m}월 ${d}일 ${day}요일`;
+    })();
+
+    diaryInput.addEventListener('input', () => {
+      charCurrent.textContent = diaryInput.value.length;
+    });
+
+    diaryInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitBtn.click();
+      }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      const text = diaryInput.value.trim();
+      if (!text) {
+        diaryInput.focus();
+        diaryInput.placeholder = '일기를 먼저 입력해 주세요 😊';
+        setTimeout(() => {
+          diaryInput.placeholder = '오늘 있었던 일을 한 줄로 적어주세요...';
+        }, 2000);
+        return;
+      }
+      lastInput = text;
+      await sendDiary(text);
+    });
+
+    retryBtn.addEventListener('click', () => {
+      if (lastInput) sendDiary(lastInput);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      diaryHistory = [];
+      const today = getTodayStr();
+      const remaining = loadAllFromLocalStorage().filter(e => e.date !== today);
+      saveToLocalStorage(remaining);
+      renderHistory();
+      renderChart();
+    });
+
+    async function sendDiary(text) {
+      setUIState('loading');
+
+      const requestBody = {
+        model: 'deepseek/deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content:
+              '당신은 따뜻하고 공감 능력이 뛰어난 AI 다이어리 친구입니다. 사용자가 하루 있었던 일을 한 줄로 쓰면, 다음 세 가지를 JSON 형식으로 응답하세요:\n1. emotion: 주요 감정 (기쁨/슬픔/분노/불안/피로/설렘/감사/외로움 중 하나)\n2. empathy: 공감 메시지 (2~3문장, 따뜻하고 진심 어린 어조)\n3. comfort: 위로/응원 메시지 (1~2문장, 힘이 되는 말)\n반드시 JSON만 응답하세요. 예: {"emotion": "피로", "empathy": "...", "comfort": "..."}',
+          },
+          {
+            role: 'user',
+            content: text,
+          },
+        ],
+      };
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status}${errBody ? ': ' + errBody : ''}`);
+        }
+
+        const data    = await res.json();
+        const raw     = data.choices?.[0]?.message?.content ?? '';
+        const parsed  = parseAIResponse(raw);
+
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const todayStr = getTodayStr();
+        diaryHistory.unshift({ time: timeStr, text, emotion: parsed.emotion });
+
+        const allEntries = loadAllFromLocalStorage();
+        allEntries.push({ date: todayStr, time: timeStr, text, emotion: parsed.emotion });
+        saveToLocalStorage(allEntries);
+
+        renderResponse(parsed);
+        renderHistory();
+        renderChart();
+        setUIState('response');
+
+        diaryInput.value = '';
+        charCurrent.textContent = '0';
+
+        responseSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        console.error('[diary] API 오류:', err);
+        const isNetworkError = err instanceof TypeError && err.message.includes('fetch');
+        if (isNetworkError) {
+          errorText.textContent = '서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.';
+        } else {
+          errorText.textContent = 'AI와 연결하는 데 문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
+        }
+        setUIState('error');
+      }
+    }
+
+    function parseAIResponse(raw) {
+      let cleaned = raw.trim();
+      const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (codeBlockMatch) {
+        cleaned = codeBlockMatch[1].trim();
+      }
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleaned = jsonMatch[0];
+      }
+      try {
+        const obj = JSON.parse(cleaned);
+        return {
+          emotion: obj.emotion  || '알 수 없음',
+          empathy: obj.empathy  || '',
+          comfort: obj.comfort  || '',
+        };
+      } catch {
+        return {
+          emotion: '알 수 없음',
+          empathy: cleaned || 'AI 응답을 해석하지 못했어요.',
+          comfort: '',
+        };
+      }
+    }
+
+    function renderResponse({ emotion, empathy, comfort }) {
+      const info = EMOTION_MAP[emotion] ?? { emoji: '💭', label: emotion };
+      emotionEmoji.textContent = info.emoji;
+      emotionLabel.textContent = info.label;
+      empathyText.textContent  = empathy;
+      comfortText.textContent  = comfort;
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = '';
+      if (diaryHistory.length === 0) {
+        historyEmpty.style.display = 'block';
+        return;
+      }
+      historyEmpty.style.display = 'none';
+      diaryHistory.forEach(({ time, text, emotion }) => {
+        const info = EMOTION_MAP[emotion] ?? { emoji: '💭', label: emotion };
+        const li   = document.createElement('li');
+        li.className = 'history-item';
+        li.innerHTML = `
+          <div class="history-item__meta">
+            <span class="history-item__time" aria-label="기록 시각">${escapeHTML(time)}</span>
+            <span class="history-item__emotion" aria-label="감정: ${escapeHTML(info.label)}">
+              ${escapeHTML(info.emoji)} ${escapeHTML(info.label)}
+            </span>
+          </div>
+          <p class="history-item__text">${escapeHTML(text)}</p>
+        `;
+        historyList.appendChild(li);
+      });
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;')
+        .replace(/'/g,  '&#39;');
+    }
+
+    function setUIState(state) {
+      loadingSection.classList.remove('visible');
+      errorSection.classList.remove('visible');
+      responseSection.classList.remove('visible');
+      submitBtn.disabled = false;
+      switch (state) {
+        case 'loading':
+          submitBtn.disabled = true;
+          loadingSection.classList.add('visible');
+          break;
+        case 'response':
+          responseSection.classList.add('visible');
+          break;
+        case 'error':
+          errorSection.classList.add('visible');
+          break;
+        case 'idle':
+        default:
+          break;
+      }
+    }
+
+    function renderChart() {
+      const canvas = document.getElementById('emotion-chart');
+      const chartEmpty = document.getElementById('chart-empty');
+      const chartLegend = document.getElementById('chart-legend');
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      const days = [];
+      const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = getDateStr(d);
+        const month = d.getMonth() + 1;
+        const day = d.getDate();
+        const dayName = DAY_NAMES[d.getDay()];
+        days.push({ dateStr, label: `${month}/${day}(${dayName})` });
+      }
+      const allEntries = loadAllFromLocalStorage();
+      const dayData = days.map(({ dateStr, label }) => {
+        const entries = allEntries.filter(e => e.date === dateStr);
+        if (entries.length === 0) return { label, emotion: null };
+        const freq = {};
+        entries.forEach(e => { freq[e.emotion] = (freq[e.emotion] || 0) + 1; });
+        const maxFreq = Math.max(...Object.values(freq));
+        const candidates = entries.filter(e => freq[e.emotion] === maxFreq);
+        const dominant = candidates[candidates.length - 1].emotion;
+        return { label, emotion: dominant };
+      });
+      const hasData = dayData.some(d => d.emotion !== null);
+      const chartWrapper = canvas.closest('.chart-wrapper');
+      if (!hasData) {
+        canvas.style.display = 'none';
+        if (chartWrapper) chartWrapper.style.display = 'none';
+        chartEmpty.classList.add('visible');
+        chartLegend.innerHTML = '';
+        return;
+      }
+      canvas.style.display = 'block';
+      if (chartWrapper) chartWrapper.style.display = '';
+      chartEmpty.classList.remove('visible');
+      const W = canvas.width;
+      const H = canvas.height;
+      const PADDING_LEFT = 64;
+      const PADDING_RIGHT = 16;
+      const PADDING_TOP = 16;
+      const PADDING_BOTTOM = 36;
+      const chartW = W - PADDING_LEFT - PADDING_RIGHT;
+      const chartH = H - PADDING_TOP - PADDING_BOTTOM;
+      const ROW_COUNT = EMOTION_Y_ORDER.length;
+      const ROW_H = chartH / ROW_COUNT;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+      ctx.font = "12px 'Noto Sans KR', sans-serif";
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#888888';
+      EMOTION_Y_ORDER.forEach((emotion, i) => {
+        const y = PADDING_TOP + ROW_H * i + ROW_H / 2;
+        ctx.beginPath();
+        ctx.strokeStyle = '#F0F0F0';
+        ctx.lineWidth = 1;
+        ctx.moveTo(PADDING_LEFT, y);
+        ctx.lineTo(PADDING_LEFT + chartW, y);
+        ctx.stroke();
+        ctx.fillStyle = '#888888';
+        ctx.fillText(emotion, PADDING_LEFT - 8, y);
+      });
+      const colW = chartW / (days.length - 1 || 1);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#888888';
+      dayData.forEach(({ label }, i) => {
+        const x = PADDING_LEFT + i * colW;
+        ctx.fillText(label, x, H - PADDING_BOTTOM + 8);
+      });
+      ctx.strokeStyle = '#E0E0E0';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      let linePoints = [];
+      const flushLine = () => {
+        if (linePoints.length >= 2) {
+          ctx.beginPath();
+          ctx.moveTo(linePoints[0].x, linePoints[0].y);
+          for (let p = 1; p < linePoints.length; p++) {
+            ctx.lineTo(linePoints[p].x, linePoints[p].y);
+          }
+          ctx.stroke();
+        }
+        linePoints = [];
+      };
+      dayData.forEach(({ emotion }, i) => {
+        if (emotion === null) { flushLine(); return; }
+        const emotionIdx = EMOTION_Y_ORDER.indexOf(emotion);
+        if (emotionIdx === -1) { flushLine(); return; }
+        const x = PADDING_LEFT + i * colW;
+        const y = PADDING_TOP + ROW_H * emotionIdx + ROW_H / 2;
+        linePoints.push({ x, y });
+      });
+      flushLine();
+      dayData.forEach(({ emotion }, i) => {
+        if (emotion === null) return;
+        const emotionIdx = EMOTION_Y_ORDER.indexOf(emotion);
+        if (emotionIdx === -1) return;
+        const x = PADDING_LEFT + i * colW;
+        const y = PADDING_TOP + ROW_H * emotionIdx + ROW_H / 2;
+        const color = EMOTION_COLORS[emotion] || '#888888';
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+      const usedEmotions = [...new Set(
+        dayData.filter(d => d.emotion !== null).map(d => d.emotion)
+      )];
+      usedEmotions.sort((a, b) =>
+        EMOTION_Y_ORDER.indexOf(a) - EMOTION_Y_ORDER.indexOf(b)
+      );
+      chartLegend.innerHTML = usedEmotions.map(emotion => {
+        const color = EMOTION_COLORS[emotion] || '#888888';
+        const info = EMOTION_MAP[emotion] ?? { emoji: '', label: emotion };
+        return `
+          <span class="chart-legend-item">
+            <span class="chart-legend-dot" style="background:${color}"></span>
+            ${escapeHTML(info.emoji)} ${escapeHTML(info.label)}
+          </span>
+        `;
+      }).join('');
+    }
+
+    loadTodayFromLocalStorage();
+    renderHistory();
+    renderChart();
+  </script>
+</body>
+</html>
